@@ -2,12 +2,19 @@
 import aiosqlite
 from typing import Callable, Any
 from collections.abc import Coroutine
+from .UserState import UserState
 
 class ApplicationContext:
     def __init__(self, database: Callable[[], Coroutine[Any, Any, aiosqlite.Connection]]):
         self._database_builder = database
         self._database = None
+        self._UserStates : dict[int, UserState] = {}
     
+    def get_user_state(self, id: int):
+        if id not in self._UserStates:
+            self._UserStates[id] = UserState()
+        return self._UserStates[id]
+
     @property
     def database(self):
         if self._database is None:
