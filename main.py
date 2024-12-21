@@ -28,5 +28,10 @@ if token is None:
 app = ApplicationCore(get_context, token)
 
 #Register components
+from components.MainMenuComponent import MainMenuComponent
+app.add_component(lambda x: MainMenuComponent(x))
+
+from components.SearchByNameComponent import SearchByNameComponent
+app.add_component(lambda x: SearchByNameComponent(x))
 
 app.run()
