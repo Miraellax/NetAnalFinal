@@ -1,8 +1,7 @@
-import telegram.ext as tge
-import telegram as tg
 import dotenv
 import os
 import logging
+import aiosqlite
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -11,11 +10,23 @@ logging.basicConfig(
 
 dotenv.load_dotenv()
 
-app = tge.ApplicationBuilder().token(os.getenv('ACCESS_TOKEN')).concurrent_updates(True).build()
+from components.application import ApplicationContext, ApplicationCore
 
-async def start(update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Test bot")
+async def get_database():
+    return await aiosqlite.connect('./database.db')
 
-app.add_handler(tge.CommandHandler("start", start))
+def get_context():
+    return ApplicationContext(
+        get_database
+    )
 
-app.run_polling()
+token = os.getenv('ACCESS_TOKEN')
+
+if token is None:
+    raise Exception('Missing ACCESS_TOKEN in environment variables')
+
+app = ApplicationCore(get_context, token)
+
+#Register components
+
+app.run()
