@@ -25,13 +25,14 @@ class ApplicationCore:
                 for component in self._components
             ]
             for component in components:
-                bot_app.add_handlers(component.handlers)
+                for handler, group in component.handlers:
+                    bot_app.add_handler(handler, group)
             await bot_app.initialize()
             await bot_app.start()
             await bot_app.updater.start_polling() #type: ignore
             try:
                 await asyncio.Future()
             finally:
-                await bot_app.stop()
+                await bot_app.updater.stop() #type: ignore
                 await bot_app.stop()
                 await bot_app.shutdown()
