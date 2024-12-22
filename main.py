@@ -36,4 +36,7 @@ app.add_component(lambda x: MainMenuComponent(x))
 from components.SearchByNameComponent import SearchByNameComponent
 app.add_component(lambda x: SearchByNameComponent(x))
 
+from components.SearchByDescriptionComponent import SearchByDescriptionComponent
+app.add_component(lambda x: SearchByDescriptionComponent(x))
+
 app.run()

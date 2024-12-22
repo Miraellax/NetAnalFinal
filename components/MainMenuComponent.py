@@ -10,11 +10,13 @@ class MainMenuComponent(ApplicationComponent):
         self.add_handler(tge.MessageHandler(tge.filters.TEXT, self.wrap_callback(self.unknown_command_in_state)), 1000)
 
         self.user_menu_markup = tg.ReplyKeyboardMarkup([
-            [tg.KeyboardButton('Поиск по названию')]
+            ['Поиск по названию'],
+            ['Поиск по запросу']
         ], resize_keyboard=True, one_time_keyboard=True)
 
         self.admin_menu_markup = tg.ReplyKeyboardMarkup([
-            [tg.KeyboardButton('Поиск по названию')]
+            ['Поиск по названию'],
+            ['Поиск по запросу']
         ], resize_keyboard=True, one_time_keyboard=True)
 
     async def open_menu(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
