@@ -1,34 +1,110 @@
 from .component import ApplicationComponent
 import telegram as tg
 import telegram.ext as tge
+import math
 
 class SearchByNameComponent(ApplicationComponent):
     def __init__(self, context):
         super().__init__(context)
         self.add_handler(tge.MessageHandler(tge.filters.Text(['Поиск по названию']), self.wrap_callback(self.find_by_name)), 0)
-        self.add_handler(tge.MessageHandler(tge.filters.TEXT, self.wrap_callback(self.find_by_name_query)), 1)
+        self.add_handler(tge.MessageHandler(tge.filters.Text(['Вперёд', 'Назад']), self.wrap_callback(self.find_by_name_list)), 1)
+        self.add_handler(tge.MessageHandler(tge.filters.TEXT, self.wrap_callback(self.open_list_item)), 2)
+        self.add_handler(tge.MessageHandler(tge.filters.TEXT, self.wrap_callback(self.find_by_name_query)), 3)
 
     async def find_by_name(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
-        print('find_by_name')
         user_state = self._context.get_user_state(update.effective_user.id) #type: ignore
-        print(user_state.current_action)
         if user_state.current_action != '':
             return
         user_state.current_action = 'find_by_name__query'
+        user_state.last_markup = None
         await update.message.reply_text('Кого ищем?') #type: ignore
-        print(user_state.current_action)
         raise tge.ApplicationHandlerStop()
     
-    async def find_by_name_query(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
-        print('find_by_name_query')
+    async def find_by_name_list(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
         user_state = self._context.get_user_state(update.effective_user.id) #type: ignore
-        print(user_state.current_action)
+        if user_state.current_action != 'find_by_name__list':
+            return
+        user_state.dynamic_state['find_by_name__page'] = (
+            user_state.dynamic_state['find_by_name__page']
+            + (1 if update.message.text == 'Вперёд' else -1)
+        )
+        async with self._context.database.cursor() as cur:
+            search_text = f'%{user_state.dynamic_state['find_by_name__text']}%'
+            result = await cur.execute(
+                "SELECT name, name_translated FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated LIMIT 10 OFFSET ?",
+                (search_text, search_text, user_state.dynamic_state['find_by_name__page']*10)
+            )
+            rows = list(await result.fetchall())
+            markup = [[f'{i+1}. {x['name_translated']} [{x['name']}]'] for i, x in enumerate(rows)]
+            user_state.dynamic_state['find_by_name__items'] = [x['id'] for x in rows]
+            if user_state.dynamic_state['find_by_name__page'] > 0:
+                markup.append(['Назад'])
+            if user_state.dynamic_state['find_by_name__page'] < user_state.dynamic_state['find_by_name__total_pages'] - 1:
+                markup.append(['Вперёд'])
+            markup.append(['Главное меню'])
+            user_state.last_markup = tg.ReplyKeyboardMarkup(markup, resize_keyboard=True, one_time_keyboard=True)
+            await update.message.reply_text(
+                f"Страница {user_state.dynamic_state['find_by_name__page'] + 1}/{user_state.dynamic_state['find_by_name__total_pages']}\n",
+                reply_markup=user_state.last_markup
+            )
+            
+        raise tge.ApplicationHandlerStop()
+    
+    async def open_list_item(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
+        try:
+            user_state = self._context.get_user_state(update.effective_user.id) #type: ignore
+            text : str = update.message.text
+            if '.' not in text:
+                return
+            num = text.split('.')[0]
+            num = int(num) - 1
+            if num < 0 or num > 9:
+                return
+            id = user_state.dynamic_state['find_by_name__items'][num]
+            async with self._context.database.cursor() as cur:
+                data = await cur.execute('SELECT * FROM creatures WHERE id = ?', (id,))
+                data = await data.fetchone()
+                await update.message.reply_text(f'{data['name_translated']} [{data['name']}]')
+            raise tge.ApplicationHandlerStop()
+        except ValueError:
+            return
+        
+    async def find_by_name_query(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
+        user_state = self._context.get_user_state(update.effective_user.id) #type: ignore
         if user_state.current_action != 'find_by_name__query':
             return
-        #user_state.current_action = 'find_by_name__list'
-        #user_state.dynamic_state['find_by_name__text'] = update.message.text #type: ignore
-        user_state.current_action = ''
         async with self._context.database.cursor() as cur:
             search_text = f'%{update.message.text}%'
-            result = await cur.execute("SELECT name, name_translated FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated LIMIT 10", (search_text, search_text))
-            await update.message.reply_text("\n".join([f'{x[1]} [{x[0]}]' for x in await result.fetchall()]))
+            result = await cur.execute(
+                "SELECT COUNT(*) FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated",
+                (search_text, search_text)
+            )
+            pages = math.ceil((await result.fetchone())[0] / 10) #type: ignore
+            if pages == 0:
+                user_state.last_markup = tg.ReplyKeyboardMarkup([
+                    ['Главное меню']
+                ], resize_keyboard=True, one_time_keyboard=True)
+                await update.message.reply_text('Ничего не нашлось', reply_markup=user_state.last_markup)
+                user_state.current_action = ''
+                return
+
+            user_state.dynamic_state['find_by_name__total_pages'] = pages
+            user_state.current_action = 'find_by_name__list'
+            user_state.dynamic_state['find_by_name__text'] = update.message.text #type: ignore
+            user_state.dynamic_state['find_by_name__page'] = 0
+            result = await cur.execute(
+                "SELECT name, name_translated, id FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated LIMIT 10",
+                (search_text, search_text)
+            )
+            rows = list(await result.fetchall())
+            markup = [[f'{i+1}. {x['name_translated']} [{x['name']}]'] for i, x in enumerate(rows)]
+            user_state.dynamic_state['find_by_name__items'] = [x['id'] for x in rows]
+            if user_state.dynamic_state['find_by_name__total_pages'] > 1:
+                markup.append(['Вперёд'])
+            markup.append(['Главное меню'])
+            user_state.last_markup = tg.ReplyKeyboardMarkup(markup, resize_keyboard=True, one_time_keyboard=True)
+            await update.message.reply_text(
+                f"Страница {user_state.dynamic_state['find_by_name__page'] + 1}/{user_state.dynamic_state['find_by_name__total_pages']}",
+                reply_markup=user_state.last_markup
+            )
+        raise tge.ApplicationHandlerStop()

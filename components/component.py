@@ -25,7 +25,6 @@ class ApplicationComponent:
             
             this_interact = asyncio.get_running_loop().create_future()
             if user_state.current_interaction is not None:
-                print('Ongoing interraction')
                 interact = user_state.current_interaction
                 async def await_and_run():
                     try:
@@ -36,7 +35,6 @@ class ApplicationComponent:
                 
                 task = asyncio.get_running_loop().create_task(await_and_run())
             else:
-                print('No ongoing interraction')
                 async def just_run():
                     try:
                         await callback(update, context)

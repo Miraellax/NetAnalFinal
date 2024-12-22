@@ -13,7 +13,9 @@ dotenv.load_dotenv()
 from components.application import ApplicationContext, ApplicationCore
 
 async def get_database():
-    return await aiosqlite.connect('./database.db')
+    conn = await aiosqlite.connect('./database.db')
+    conn.row_factory = aiosqlite.Row
+    return conn
 
 def get_context():
     return ApplicationContext(
