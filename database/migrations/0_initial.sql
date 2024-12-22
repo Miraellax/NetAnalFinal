@@ -153,7 +153,8 @@ CREATE TABLE creatures (
     legendary_actions TEXT,
     mythic_actions TEXT,
     lair_actions TEXT,
-    description TEXT
+    description TEXT,
+    url TEXT NOT NULL
 
     FOREIGN KEY (size) REFERENCES creature_sizes(id),
     FOREIGN KEY (type) REFERENCES creature_types(id),
