@@ -48,7 +48,9 @@ CREATE TABLE creature_sources (
 CREATE TABLE creatures (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
+    name_uppercase TEXT NOT NULL,
     name_translated TEXT NOT NULL,
+    name_translated_uppercase TEXT NOT NULL,
     size INTEGER NOT NULL,
     type INTEGER NOT NULL,
     alignment INTEGER NOT NULL,

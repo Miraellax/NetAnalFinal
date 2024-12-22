@@ -33,7 +33,7 @@ class SearchByNameComponent(ApplicationComponent):
         async with self._context.database.cursor() as cur:
             search_text = f'%{user_state.dynamic_state['find_by_name__text']}%'
             result = await cur.execute(
-                "SELECT name, name_translated, id FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated LIMIT 10 OFFSET ?",
+                "SELECT name, name_translated, id FROM creatures WHERE name_uppercase LIKE ? OR name_translated_uppercase LIKE ? ORDER BY name_translated_uppercase LIMIT 10 OFFSET ?",
                 (search_text, search_text, user_state.dynamic_state['find_by_name__page']*10)
             )
             rows = list(await result.fetchall())
@@ -55,6 +55,8 @@ class SearchByNameComponent(ApplicationComponent):
     async def open_list_item(self, update: tg.Update, context: tge.ContextTypes.DEFAULT_TYPE):
         try:
             user_state = self._context.get_user_state(update.effective_user.id) #type: ignore
+            if user_state.current_action != 'find_by_name__list':
+                return
             text : str = update.message.text
             if '.' not in text:
                 return
@@ -83,7 +85,7 @@ class SearchByNameComponent(ApplicationComponent):
         async with self._context.database.cursor() as cur:
             search_text = f'%{user_state.dynamic_state['find_by_name__text']}%'
             result = await cur.execute(
-                "SELECT name, name_translated, id FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated LIMIT 10 OFFSET ?",
+                "SELECT name, name_translated, id FROM creatures WHERE name_uppercase LIKE ? OR name_translated_uppercase LIKE ? ORDER BY name_translated_uppercase LIMIT 10 OFFSET ?",
                 (search_text, search_text, user_state.dynamic_state['find_by_name__page']*10)
             )
             rows = list(await result.fetchall())
@@ -106,9 +108,9 @@ class SearchByNameComponent(ApplicationComponent):
         if user_state.current_action != 'find_by_name__query':
             return
         async with self._context.database.cursor() as cur:
-            search_text = f'%{update.message.text}%'
+            search_text = f'%{update.message.text.upper()}%'
             result = await cur.execute(
-                "SELECT COUNT(*) FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated",
+                "SELECT COUNT(*) FROM creatures WHERE name_uppercase LIKE ? OR name_translated_uppercase LIKE ?",
                 (search_text, search_text)
             )
             pages = math.ceil((await result.fetchone())[0] / 10) #type: ignore
@@ -122,10 +124,10 @@ class SearchByNameComponent(ApplicationComponent):
 
             user_state.dynamic_state['find_by_name__total_pages'] = pages
             user_state.current_action = 'find_by_name__list'
-            user_state.dynamic_state['find_by_name__text'] = update.message.text #type: ignore
+            user_state.dynamic_state['find_by_name__text'] = update.message.text.upper() #type: ignore
             user_state.dynamic_state['find_by_name__page'] = 0
             result = await cur.execute(
-                "SELECT name, name_translated, id FROM creatures WHERE name LIKE ? OR name_translated LIKE ? ORDER BY name_translated LIMIT 10",
+                "SELECT name, name_translated, id FROM creatures WHERE name_uppercase LIKE ? OR name_translated_uppercase LIKE ? ORDER BY name_translated_uppercase LIMIT 10",
                 (search_text, search_text)
             )
             rows = list(await result.fetchall())
