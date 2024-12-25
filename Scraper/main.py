@@ -13,13 +13,6 @@ from Scraper.scraper import scrape_bestiary_table, scrape_beast_info
 base_url = "https://dnd.su"
 bestiary_url = "/bestiary/"
 
-test_html = "Аспект Тиамат _ Бестиарий D&D 5 _ Fizban's Treasury of Dragons.htm"
-test_html2 = "Вервепрь _ Бестиарий D&D 5 _ Monster manual.htm"
-test_html3 = "Скелет _ Бестиарий D&D 5 _ Player's handbook, Monster manual.htm"
-test_html4 = "Баллиста _ Бестиарий D&D 5 _ Dungeon master's guide.htm"
-test_html5 = "Панцирница _ Бестиарий D&D 5 _ Monster manual.htm"
-
-
 # # 1. Сохранение адресов к карточкам бестиария в текстовый файл
 # pages = scrape_bestiary_table(url=base_url+bestiary_url, base_url=base_url)
 # with open("output/card_urls.txt", "w") as file:
@@ -31,7 +24,6 @@ test_html5 = "Панцирница _ Бестиарий D&D 5 _ Monster manual.h
 #     lines = file.readlines()
 #     pages = [line.strip() for line in lines]
 
-# pages = ["https://dnd.su/bestiary/5185-zhent-martial-arts-adept/"]
 
 # 3. Создание и заполнение датафрейма
 # info_card_columns = list(InfoCard(None).__dict__.keys())

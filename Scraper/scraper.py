@@ -36,7 +36,7 @@ def scrape_bestiary_table(url: str, base_url: str):
 
     return pages
 
-
+# TODO починить alignment, он захватывает с собой строку "именной нип"
 def scrape_beast_info(url: str, session):
     # Создание объекта карточки существа
     info_card = InfoCard(url)
@@ -517,7 +517,6 @@ def scrape_beast_info(url: str, session):
                             info_card.telepathy = 0
 
             case KeyWords.challenge_rating.value:
-                # TODO поменять на хранение строки в БД
                 info_card.cr = item.text.replace(KeyWords.challenge_rating.value, "").strip().split(" ")[0]
 
             case KeyWords.habitat.value:
@@ -643,7 +642,6 @@ def scrape_beast_info(url: str, session):
     for description_node in li_desc:
         # Описание без заголовка, может хранить легендарное сопротивление
         if len(description_node.find_all("h3", "subsection-title")) == 0:
-            # TODO add svoistva into DB
             info_card.properties = description_node.text
             if (leg_res_index := description_node.text.find(DescriptionTitles.legendary_resistance.value)) != -1:
                 # Легендарное сопротивление (5/день)
