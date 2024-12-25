@@ -2,7 +2,7 @@ import enum
 
 
 class KeyWords(enum.Enum):
-    armour_class = "Класс Доспеха"
+    armor_class = "Класс Доспеха"
     hitpoints = "Хиты"
     speed = "Скорость"
     saving_throws = "Спасброски"
