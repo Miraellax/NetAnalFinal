@@ -27,7 +27,6 @@ def insert_db_names_column(cursor: sqlite3.Cursor, sql_query, value) -> int:
     cursor.execute(sql_query, [value])
     res = cursor.fetchall()
 
-    # {name: id}
     return res[0]["id"]
 
 def insert_creature(cursor: sqlite3.Cursor, creature_df):
@@ -260,12 +259,9 @@ def insert_creature(cursor: sqlite3.Cursor, creature_df):
                                     :properties
                                     ) ON CONFLICT DO NOTHING RETURNING id;"""
 
-
-    # print(creature_df.to_dict())
     cursor.execute(sql, creature_df.to_dict())
     res = cursor.fetchall()
 
-    # {name: id}
     return res[0]
 
 # 1. Чтение датафрейма из файла
