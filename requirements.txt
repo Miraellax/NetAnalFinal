@@ -26,3 +26,6 @@ typing_extensions==4.12.2
 tzdata==2024.2
 urllib3==2.2.3
 wheel==0.38.4
+
+scikit-learn~=1.6.0
+nltk~=3.9.1
