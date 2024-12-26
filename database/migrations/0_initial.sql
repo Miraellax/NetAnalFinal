@@ -9,27 +9,22 @@ INSERT INTO admins (userid) VALUES (393113875), (1186226062);
 
 CREATE TABLE creature_sizes (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE creature_types (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE creature_alignments (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
-);
-
-CREATE TABLE creature_alignments (
-    id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE damage_susceptibility (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 INSERT INTO damage_susceptibility
@@ -42,7 +37,7 @@ VALUES
 
 CREATE TABLE creature_sources (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE creatures (
@@ -53,10 +48,10 @@ CREATE TABLE creatures (
     name_translated_uppercase TEXT NOT NULL,
     size INTEGER NOT NULL,
     type INTEGER NOT NULL,
-    alignment INTEGER NOT NULL,
+    alignment INTEGER,
     is_named INTEGER NOT NULL,
     armor_class INTEGER NOT NULL CHECK(armor_class > 0),
-    armor_class_type TEXT NOT NULL,
+    armor_class_type TEXT,
     average_hitpoints INTEGER NOT NULL CHECK(average_hitpoints > 0),
     hit_die_type INTEGER NOT NULL CHECK(hit_die_type > 0),
     hit_dice INTEGER NOT NULL CHECK(hit_dice > 0),
@@ -66,17 +61,17 @@ CREATE TABLE creatures (
     swimming_speed INTEGER,
     digging_speed INTEGER,
     climbing_speed INTEGER,
-    strength INTEGER NOT NULL CHECK(strength > 0 AND strength <= 30),
+    strength INTEGER NOT NULL CHECK(strength >= 0 AND strength <= 30),
     strength_modifier INTEGER NOT NULL CHECK(strength_modifier >= -5 AND strength_modifier <= 10),
-    dexterity INTEGER NOT NULL CHECK(dexterity > 0 AND dexterity <= 30),
+    dexterity INTEGER NOT NULL CHECK(dexterity >= 0 AND dexterity <= 30),
     dexterity_modifier INTEGER NOT NULL CHECK(dexterity_modifier >= -5 AND dexterity_modifier <= 10),
-    constitution INTEGER NOT NULL CHECK(constitution > 0 AND constitution <= 30),
+    constitution INTEGER NOT NULL CHECK(constitution >= 0 AND constitution <= 30),
     constitution_modifier INTEGER NOT NULL CHECK(constitution_modifier >= -5 AND constitution_modifier <= 10),
-    intelligence INTEGER NOT NULL CHECK(intelligence > 0 AND intelligence <= 30),
+    intelligence INTEGER NOT NULL CHECK(intelligence >= 0 AND intelligence <= 30),
     intelligence_modifier INTEGER NOT NULL CHECK(intelligence_modifier >= -5 AND intelligence_modifier <= 10),
-    wisdom INTEGER NOT NULL CHECK(wisdom > 0 AND wisdom <= 30),
+    wisdom INTEGER NOT NULL CHECK(wisdom >= 0 AND wisdom <= 30),
     wisdom_modifier INTEGER NOT NULL CHECK(wisdom_modifier >= -5 AND wisdom_modifier <= 10),
-    charisma INTEGER NOT NULL CHECK(charisma > 0 AND charisma <= 30),
+    charisma INTEGER NOT NULL CHECK(charisma >= 0 AND charisma <= 30),
     charisma_modifier INTEGER NOT NULL CHECK(charisma_modifier >= -5 AND charisma_modifier <= 10),
     strength_saving_throw INTEGER NOT NULL CHECK(strength_saving_throw >= -5 AND strength_saving_throw <= 19),
     dexterity_saving_throw INTEGER NOT NULL CHECK(strength_saving_throw >= -5 AND strength_saving_throw <= 19),
@@ -84,7 +79,6 @@ CREATE TABLE creatures (
     intelligence_saving_throw INTEGER NOT NULL CHECK(strength_saving_throw >= -5 AND strength_saving_throw <= 19),
     wisdom_saving_throw INTEGER NOT NULL CHECK(strength_saving_throw >= -5 AND strength_saving_throw <= 19),
     charisma_saving_throw INTEGER NOT NULL CHECK(strength_saving_throw >= -5 AND strength_saving_throw <= 19),
-    strength_saving_throw INTEGER NOT NULL CHECK(strength_saving_throw >= -5 AND strength_saving_throw <= 19),
     acrobatics INTEGER NOT NULL CHECK(acrobatics >= -5 AND acrobatics <= 28),
     animal_handling INTEGER NOT NULL CHECK(animal_handling >= -5 AND animal_handling <= 28),
     arcana INTEGER NOT NULL CHECK(arcana >= -5 AND arcana <= 28),
@@ -98,7 +92,7 @@ CREATE TABLE creatures (
     nature INTEGER NOT NULL CHECK(nature >= -5 AND nature <= 28),
     perception INTEGER NOT NULL CHECK(perception >= -5 AND perception <= 28),
     performance INTEGER NOT NULL CHECK(performance >= -5 AND performance <= 28),
-    persuation INTEGER NOT NULL CHECK(persuation >= -5 AND persuation <= 28),
+    persuasion INTEGER NOT NULL CHECK(persuasion >= -5 AND persuasion <= 28),
     religion INTEGER NOT NULL CHECK(religion >= -5 AND religion <= 28),
     sleight_of_hand INTEGER NOT NULL CHECK(sleight_of_hand >= -5 AND sleight_of_hand <= 28),
     stealth INTEGER NOT NULL CHECK(stealth >= -5 AND stealth <= 28),
@@ -107,7 +101,7 @@ CREATE TABLE creatures (
     darkvision INTEGER,
     blindsight INTEGER,
     truesight INTEGER,
-    tremorsight INTEGER,
+    tremorsense INTEGER,
     nonmagical_slashing INTEGER NOT NULL,
     silver_slashing INTEGER NOT NULL,
     adamntine_slashing INTEGER NOT NULL,
@@ -145,18 +139,21 @@ CREATE TABLE creatures (
     prone_immunity INTEGER NOT NULL,
     grappled_immunity INTEGER NOT NULL,
     telepathy INTEGER NOT NULL,
-    cr INTEGER NOT NULL CHECK (cr >= 0 AND cr <= 30),
+    cr TEXT NOT NULL,
     source INTEGER NOT NULL,
     proficiency_bonus INTEGER NOT NULL CHECK(proficiency_bonus >= 2 AND proficiency_bonus <= 9),
     legendary_resistance INTEGER,
-    actions TEXT NOT NULL,
+    actions TEXT,
     bonus_actions TEXT,
     reactions TEXT,
     legendary_actions TEXT,
     mythic_actions TEXT,
     lair_actions TEXT,
     description TEXT,
-    url TEXT NOT NULL
+    properties TEXT,
+    habitat TEXT,
+    url TEXT NOT NULL UNIQUE,
+
 
     FOREIGN KEY (size) REFERENCES creature_sizes(id),
     FOREIGN KEY (type) REFERENCES creature_types(id),
