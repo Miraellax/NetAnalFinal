@@ -2,7 +2,7 @@ from .component import ApplicationComponent
 import telegram as tg
 import telegram.ext as tge
 import math
-from .CreatureCard import get_creature_card_data, create_card_markup
+from .CreatureCard import get_creature_card_data, create_card_markup, get_similar_creatures
 
 class SearchByNameComponent(ApplicationComponent):
     def __init__(self, context):
@@ -72,7 +72,8 @@ class SearchByNameComponent(ApplicationComponent):
             user_state.current_action = 'find_by_name__card'
             async with self._context.database.cursor() as cur:
                 data = await get_creature_card_data(id, cur)
-                await update.message.reply_text(create_card_markup(data), reply_markup=user_state.last_markup)
+                similar_data = await get_similar_creatures(id, cur)
+                await update.message.reply_text(create_card_markup(data, similar_data), reply_markup=user_state.last_markup)
             raise tge.ApplicationHandlerStop()
         except ValueError:
             return
